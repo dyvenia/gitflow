@@ -1,4 +1,5 @@
 from typing import List
+import json
 import requests
 import pandas as pd
 
@@ -30,12 +31,34 @@ class GithubRepos:
 
 
 class GitHubUsers:
-    def get_repo_contributors(self, repo: str = None):
+    """
+    Get information about contributors and contributions.
+    """
+
+    def get_repo_contributors(self, repo: str = None) -> json:
+        """
+        Get specific repository contributors.
+
+        Args:
+            repo (str, optional): Repository name. Defaults to None.
+
+        Returns:
+            json: json with all information about contributors.
+        """
         url = f"https://api.github.com/repos/dyvenia/{repo}/contributors"
         req = requests.get(url)
         return req.json()
 
-    def get_all_contributions(self, repos: List[str] = None):
+    def get_all_contributions(self, repos: List[str] = None) -> pd.DataFrame:
+        """
+        Get all contributions for list of repos for all contributors.
+
+        Args:
+            repos (List[str], optional): List of repository names. Defaults to None.
+
+        Returns:
+            pd.DataFrame: DF
+        """
         dfs = []
         for repo in repos:
             contributors = self.get_repo_contributors(repo=repo)
