@@ -12,6 +12,12 @@ class GitHubRepos:
     def get_repos_number(self, url: str = "users/dyvenia") -> int:
         """
         Get number of public repositories from Dyvenia.
+
+        Args:
+            url (str, optional): API url. Defaults to "users/dyvenia".
+
+        Returns:
+            int: number of repositories
         """
         test = requests.get(BASE_URL + url)
         result = test.json()
@@ -20,6 +26,12 @@ class GitHubRepos:
     def get_repo_names(self, url: str = "users/dyvenia/repos") -> List[str]:
         """
         Get public repositories names from Dyvenia.
+
+        Args:
+            url (str, optional): API url. Defaults to "users/dyvenia/repos".
+
+        Returns:
+            List[str]: List of repository names
         """
         repos = requests.get(BASE_URL + url)
         result = repos.json()
@@ -29,20 +41,24 @@ class GitHubRepos:
 
 
 class GitHubPR:
-    def __init__(self):
-        pass
+    """
+    Get information about Pull requests.
+    """
 
     def request_to_json(self, url: str = None):
         repos = requests.get(url)
         return repos.json()
 
-    def get_files_from_pr(self, repo: str = None, pr_number: int = None):
+    def get_files_from_pr(self, repo: str = None, pr_number: int = None) -> List[dict]:
         """
         Get files changed from specific PR.
-        needed: filename, status, additions, deletions, changes
+
+        Args:
+            repo (str, optional): Repository name. Defaults to None.
+            pr_number (int, optional): Pull request number. Defaults to None.
 
         Returns:
-            list of dicts -> convert to DF maybe - in final solution. 1 dict result[0] gives 1 commit from PR( For/while needed to extract info to dict)
+            List[dict]: List of dicts
         """
         url = f"repos/dyvenia/{repo}/pulls/{pr_number}/files"
         result = self.request_to_json(BASE_URL + url)
@@ -59,20 +75,19 @@ class GitHubPR:
                 "deletions": res_json["deletions"],
                 "changes": res_json["changes"],
             }
-            print("___", dict_pr)
             list_dict_pr.append(dict_pr)
         return list_dict_pr
 
-    def get_commit_from_pr(self, repo: str = None, pr_number: int = None):
+    def get_commit_from_pr(self, repo: str = None, pr_number: int = None) -> List[dict]:
         """
         Get info about commits from specific PR.
-        needed: commit->author->name="",
-        date,
-        commiter(probably same as author),
-        message
+
+        Args:
+            repo (str, optional): Repository name. Defaults to None.
+            pr_number (int, optional): Pull request number. Defaults to None.
 
         Returns:
-            list of dicts -> convert to DF maybe - in final solution. 1 dict result[0] gives 1 commit from PR( For/while needed to extract info to dict)
+            List[dict]: List of dicts
         """
         url = f"repos/dyvenia/{repo}/pulls/{pr_number}/commits"
         result = self.request_to_json(BASE_URL + url)
