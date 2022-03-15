@@ -1,5 +1,6 @@
 from typing import List
 import requests
+import pandas as pd
 
 BASE_URL = "https://api.github.com/"
 
@@ -26,3 +27,31 @@ class GithubRepos:
         repos = self.get_repos_number()
         repo_names = [result[num]["name"] for num in range(repos)]
         return repo_names
+
+
+class GitHubUsers:
+    def get_repo_contributors(self, repo: str = None):
+        url = f"https://api.github.com/repos/dyvenia/{repo}/contributors"
+        req = requests.get(url)
+        return req.json()
+
+    def get_all_contributions(self, repos: List[str] = None):
+        dfs = []
+        for repo in repos:
+            contributors = self.get_repo_contributors(repo=repo)
+            contrib_dict = {}
+            contributor_list = []
+
+            for contrib in contributors:
+                contrib_dict = {
+                    "repo": repo,
+                    "login": contrib["login"],
+                    "contributions": contrib["contributions"],
+                }
+                contributor_list.append(contrib_dict)
+            df_dict = pd.DataFrame(contributor_list)
+            dfs.append(df_dict)
+        return self.union_dfs_task(dfs)
+
+    def union_dfs_task(self, dfs):
+        return pd.concat(dfs, ignore_index=True)
