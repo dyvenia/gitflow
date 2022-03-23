@@ -134,6 +134,12 @@ class GitHubPR:
             list_dict_pr.append(dict_pr)
         return list_dict_pr
 
+    def files_to_df(self, files: List[dict] = None) -> pd.DataFrame:
+        """
+        Get all changed files for pull request and convert to DF.
+        """
+        return pd.DataFrame(files)
+
     def get_commit_from_pr(self) -> List[dict]:
         """
         Get info about commits from specific PR.
@@ -157,3 +163,9 @@ class GitHubPR:
             }
             list_dict_pr.append(dict_pr)
         return list_dict_pr
+
+    def commits_to_df(self, commits: List[dict] = None) -> pd.DataFrame:
+        """
+        Get all commits for pull request and convert to DF.
+        """
+        return pd.DataFrame(commits)
