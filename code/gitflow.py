@@ -169,3 +169,46 @@ class GitHubPR:
         Get all commits for pull request and convert to DF.
         """
         return pd.DataFrame(commits)
+
+    def str_to_datetime(self, date_str: str = None) -> datetime:
+        """
+        Convert string to datetime.
+
+        Args:
+            date_str (str, optional): Date in string format. Defaults to None.
+
+        Returns:
+            datetime: Date in datetime format
+        """
+        date_str_new = " ".join(date_str.split("T"))
+        return datetime.fromisoformat(date_str_new[:-1])
+
+    def combine_pr_info_to_df(self) -> pd.DataFrame:
+        """
+        Collect information about pull request. PR info, how long have been opened, create and close date.
+
+        Returns:
+            pd.DataFrame: Dataframe with information about pull request.
+        """
+        url = f"repos/dyvenia/{self.repo}/pulls/{self.pr_number}"
+        result = self.request_to_json(BASE_URL + url)
+
+        if result["closed_at"] is not None:
+            created = self.str_to_datetime(result["created_at"])
+            closed = self.str_to_datetime(result["closed_at"])
+            duration_days = (closed - created).days
+        else:
+            duration_days = 0
+
+        dict_general = {
+            "pr_name": result["title"],
+            "pr_number": self.pr_number,
+            "state": result["state"],
+            "created_at": result["created_at"],
+            "updated_at": result["updated_at"],
+            "closed_at": result["closed_at"],
+            "merged_at": result["merged_at"],
+            "duration_days": duration_days,
+        }
+
+        return pd.DataFrame(dict_general, index=[0])
