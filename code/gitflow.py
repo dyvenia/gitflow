@@ -4,43 +4,9 @@ import requests
 import pandas as pd
 from datetime import datetime
 
+from utils import request_to_json
+
 BASE_URL = "https://api.github.com/"
-
-
-class GitHubRepos:
-    """
-    Get information about repositories from organisation.
-    """
-
-    def get_repos_number(self, url: str = "users/dyvenia") -> int:
-        """
-        Get number of public repositories from Dyvenia.
-
-        Args:
-            url (str, optional): API url. Defaults to "users/dyvenia".
-
-        Returns:
-            int: number of repositories
-        """
-        test = requests.get(BASE_URL + url)
-        result = test.json()
-        return result["public_repos"]
-
-    def get_repo_names(self, url: str = "users/dyvenia/repos") -> List[str]:
-        """
-        Get public repositories names from Dyvenia.
-
-        Args:
-            url (str, optional): API url. Defaults to "users/dyvenia/repos".
-
-        Returns:
-            List[str]: List of repository names
-        """
-        repos = requests.get(BASE_URL + url)
-        result = repos.json()
-        repos = self.get_repos_number()
-        repo_names = [result[num]["name"] for num in range(repos)]
-        return repo_names
 
 
 class GitHubUsers:
@@ -105,10 +71,6 @@ class GitHubPR:
         self.repo = repo
         self.pr_number = pr_number
 
-    def request_to_json(self, url: str = None):
-        repos = requests.get(url)
-        return repos.json()
-
     def get_files_from_pr(self) -> List[dict]:
         """
         Get files changed from specific PR.
@@ -117,7 +79,7 @@ class GitHubPR:
             List[dict]: List of dicts
         """
         url = f"repos/dyvenia/{self.repo}/pulls/{self.pr_number}/files"
-        result = self.request_to_json(BASE_URL + url)
+        result = request_to_json(BASE_URL + url)
         list_dict_pr = []
         for i in range(len(result)):
             res_json = result[i]
@@ -148,7 +110,7 @@ class GitHubPR:
             List[dict]: List of dicts
         """
         url = f"repos/dyvenia/{self.repo}/pulls/{self.pr_number}/commits"
-        result = self.request_to_json(BASE_URL + url)
+        result = request_to_json(BASE_URL + url)
 
         list_dict_pr = []
         for i in range(len(result)):
