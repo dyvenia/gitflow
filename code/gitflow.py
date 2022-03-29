@@ -71,14 +71,20 @@ class GitHubPR:
         self.repo = repo
         self.pr_number = pr_number
 
-    def get_files_from_pr(self) -> List[dict]:
+    def get_files_from_pr(self, repo: str = None, pr_number: int = None) -> List[dict]:
         """
         Get files changed from specific PR.
+
+        Args:
+            repo (str, optional): Repository name. Defaults to None.
+            pr_number (int, optional):Pull request number. Defaults to None.
 
         Returns:
             List[dict]: List of dicts
         """
-        url = f"repos/dyvenia/{self.repo}/pulls/{self.pr_number}/files"
+        repo = repo or self.repo
+        pr_number = pr_number or self.pr_number
+        url = f"repos/dyvenia/{repo}/pulls/{pr_number}/files"
         result = request_to_json(BASE_URL + url)
         list_dict_pr = []
         for i in range(len(result)):
@@ -86,8 +92,8 @@ class GitHubPR:
             dict_pr = {
                 "filename": res_json["filename"].split("/")[-1],
                 "path_to_file": res_json["filename"],
-                "pr_number": self.pr_number,
-                "repo": self.repo,
+                "pr_number": pr_number,
+                "repo": repo,
                 "status": res_json["status"],
                 "additions": res_json["additions"],
                 "deletions": res_json["deletions"],
@@ -102,14 +108,20 @@ class GitHubPR:
         """
         return pd.DataFrame(files)
 
-    def get_commit_from_pr(self) -> List[dict]:
+    def get_commit_from_pr(self, repo: str = None, pr_number: int = None) -> List[dict]:
         """
         Get info about commits from specific PR.
 
+        Args:
+            repo (str, optional): Repository name. Defaults to None.
+            pr_number (int, optional):Pull request number. Defaults to None.
+
         Returns:
-            List[dict]: List of dicts
+            List[dict]: List of dictionaries
         """
-        url = f"repos/dyvenia/{self.repo}/pulls/{self.pr_number}/commits"
+        repo = repo or self.repo
+        pr_number = pr_number or self.pr_number
+        url = f"repos/dyvenia/{repo}/pulls/{pr_number}/commits"
         result = request_to_json(BASE_URL + url)
 
         list_dict_pr = []
@@ -118,7 +130,7 @@ class GitHubPR:
             commit = res_json["commit"]
             dict_pr = {
                 "author": commit["author"]["name"],
-                "pr_number": self.pr_number,
+                "pr_number": pr_number,
                 "date_commit": commit["author"]["date"],
                 "message": commit["message"],
                 "comment_count": commit["comment_count"],
@@ -145,15 +157,23 @@ class GitHubPR:
         date_str_new = " ".join(date_str.split("T"))
         return datetime.fromisoformat(date_str_new[:-1])
 
-    def combine_pr_info_to_df(self) -> pd.DataFrame:
+    def combine_pr_info_to_df(
+        self, repo: str = None, pr_number: int = None
+    ) -> pd.DataFrame:
         """
         Collect information about pull request. PR info, how long have been opened, create and close date.
+
+        Args:
+            repo (str, optional): Repository name. Defaults to None.
+            pr_number (int, optional):Pull request number. Defaults to None.
 
         Returns:
             pd.DataFrame: Dataframe with information about pull request.
         """
-        url = f"repos/dyvenia/{self.repo}/pulls/{self.pr_number}"
-        result = self.request_to_json(BASE_URL + url)
+        repo = repo or self.repo
+        pr_number = pr_number or self.pr_number
+        url = f"repos/dyvenia/{repo}/pulls/{pr_number}"
+        result = request_to_json(BASE_URL + url)
 
         if result["closed_at"] is not None:
             created = self.str_to_datetime(result["created_at"])
@@ -164,7 +184,7 @@ class GitHubPR:
 
         dict_general = {
             "pr_name": result["title"],
-            "pr_number": self.pr_number,
+            "pr_number": pr_number,
             "state": result["state"],
             "created_at": result["created_at"],
             "updated_at": result["updated_at"],
