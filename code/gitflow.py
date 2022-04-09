@@ -77,7 +77,7 @@ class GitHubPR:
 
         Args:
             repo (str, optional): Repository name. Defaults to None.
-            pr_number (int, optional):Pull request number. Defaults to None.
+            pr_number (int, optional): Pull request number. Defaults to None.
 
         Returns:
             List[dict]: List of dicts
@@ -108,7 +108,9 @@ class GitHubPR:
         """
         return pd.DataFrame(files)
 
-    def get_commit_from_pr(self, repo: str = None, pr_number: int = None) -> List[dict]:
+    def get_commits_from_pr(
+        self, repo: str = None, pr_number: int = None
+    ) -> List[dict]:
         """
         Get info about commits from specific PR.
 
@@ -165,7 +167,7 @@ class GitHubPR:
 
         Args:
             repo (str, optional): Repository name. Defaults to None.
-            pr_number (int, optional):Pull request number. Defaults to None.
+            pr_number (int, optional): Pull request number. Defaults to None.
 
         Returns:
             pd.DataFrame: Dataframe with information about pull request.
@@ -194,3 +196,19 @@ class GitHubPR:
         }
 
         return pd.DataFrame(dict_general, index=[0])
+
+    def union_dfs_task(self, dfs) -> pd.DataFrame:
+        return pd.concat(dfs, ignore_index=True)
+
+    def combine_all_pr_info(self) -> pd.DataFrame:
+        """
+        Combine all informations from PR into one data frame.
+
+        Returns:
+            pd.DataFrame: DF containing information about commits and files.
+        """
+        commits_df = self.commits_to_df(self.get_commits_from_pr())
+        files_df = self.files_to_df(self.get_files_from_pr())
+
+        combined_df = self.union_dfs_task([files_df, commits_df])
+        return combined_df
