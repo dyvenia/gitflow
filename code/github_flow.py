@@ -5,6 +5,18 @@ from utils import request_to_json, get_repo_names
 from github_pr import GitHubPR
 from github_users import GitHubUsers
 
+REPO_NAMES = [
+    "dyvenia",
+    "elt_workshop",
+    "git-workshop",
+    "gitflow",
+    "notebooks",
+    "timeflow",
+    "timeflow_ui",
+    "timelogs",
+    "viadot",
+]
+
 
 class GitHubFlow:
     """
@@ -85,21 +97,17 @@ class GitHubFlow:
 
         return dict_repo_login
 
-    def run(self):
-        # temporary - to minimize the number of requests
-        repo_names = [
-            "dyvenia",
-            "elt_workshop",
-            "git-workshop",
-            "gitflow",
-            "notebooks",
-            "timeflow",
-            "timeflow_ui",
-            "timelogs",
-            "viadot",
-        ]
+    def run_pr_info(self) -> pd.DataFrame:
+        """
+        Method to generate DataFrame with information about all pull requests.
+        DataFrame contains information about PR name and PR number per user and repository where he contributes.
 
-        df_all_contributions = self.contributor_info.get_all_contributions(repo_names)
+        Returns:
+            pd.DataFrame: Data Frame["contributor", "repo", "number", "title"].
+        """
+        # temporary - to minimize the number of requests
+
+        df_all_contributions = self.contributor_info.get_all_contributions(REPO_NAMES)
         dict_repo_login = self.create_pairs_contributor_repo(
             df_all_contributions[["repo", "login"]]
         )
