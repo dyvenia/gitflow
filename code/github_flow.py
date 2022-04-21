@@ -143,3 +143,28 @@ class GitHubFlow:
             df_combined = pd.concat([df_combined, pd.DataFrame()])
 
         return df_combined
+
+    def run_files_info(self) -> pd.DataFrame:
+        """
+        Method to generate DataFrame with information about all files changed in pull requests.
+        DataFrame contains information about filename, path_to_file, pr_number, repo name, status
+        what happend with the file (additions, deletions, changes).
+
+        Returns:
+            pd.DataFrame: Data Frame["filename", "path_to_file", "pr_number",
+            "repo", "status", "additions","deletions", "changes"].
+        """
+        df = self.run_pr_info()
+        dict_pr_number_repo = {row["number"]: row["repo"] for _, row in df.iterrows()}
+        df_combined = pd.DataFrame()
+        try:
+            for pr_number, repo in dict_pr_number_repo.items():
+                df_commits = self.pr_info.files_to_df(
+                    self.pr_info.get_files_from_pr(repo, pr_number)
+                )
+                df_combined = pd.concat([df_combined, df_commits])
+        except Exception as e:
+            print("Exception in get_files_from_pr - ", e)
+            df_combined = pd.concat([df_combined, pd.DataFrame()])
+
+        return df_combined
