@@ -5,6 +5,7 @@ from utils import request_to_json, get_repo_names
 from github_pr import GitHubPR
 from github_users import GitHubUsers
 
+# temporary - to minimize the number of requests
 REPO_NAMES = [
     "dyvenia",
     "elt_workshop",
@@ -105,8 +106,6 @@ class GitHubFlow:
         Returns:
             pd.DataFrame: Data Frame["contributor", "repo", "number", "title"].
         """
-        # temporary - to minimize the number of requests
-
         df_all_contributions = self.contributor_info.get_all_contributions(REPO_NAMES)
         dict_repo_login = self.create_pairs_contributor_repo(
             df_all_contributions[["repo", "login"]]
@@ -123,6 +122,13 @@ class GitHubFlow:
         return df[["contributor", "repo", "number", "title"]].dropna()
 
     def run_commit_info(self) -> pd.DataFrame:
+        """
+        Method to generate DataFrame with information about all commits from pull requests.
+        DataFrame contains information about author, PR number, message and date_commit.
+
+        Returns:
+            pd.DataFrame: Data Frame["author", "pr_number", "date_commit", "message", "comment_count"].
+        """
         df = self.run_pr_info()
         dict_pr_number_repo = {row["number"]: row["repo"] for _, row in df.iterrows()}
         df_combined = pd.DataFrame()
