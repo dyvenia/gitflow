@@ -145,6 +145,15 @@ class GitHubFlow:
         return df_combined
 
     def run_files_info(self) -> pd.DataFrame:
+        """
+        Method to generate DataFrame with information about all files changed in pull requests.
+        DataFrame contains information about filename, path_to_file, pr_number, repo name, status
+        what happend with the file (additions, deletions, changes).
+
+        Returns:
+            pd.DataFrame: Data Frame["filename", "path_to_file", "pr_number",
+            "repo", "status", "additions","deletions", "changes"].
+        """
         df = self.run_pr_info()
         dict_pr_number_repo = {row["number"]: row["repo"] for _, row in df.iterrows()}
         df_combined = pd.DataFrame()
