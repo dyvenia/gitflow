@@ -16,7 +16,11 @@ REPO_NAMES = [
     "timeflow_ui",
     "timelogs",
     "viadot",
+    "js_frontends_comparison",
+    "timeflow-svelte",
 ]
+# 'docker-workshop',
+# 'folium_workshop',
 
 
 class GitHubFlow:
@@ -78,7 +82,7 @@ class GitHubFlow:
 
     def list_all_pr_per_contributors(self, dict_repo_login: dict = None) -> List[dict]:
         """
-        List combined pull requests per every
+        List combined pull requests per each contributor.
 
         Args:
             dict_repo_login (dict, optional): Each contribution that occurs in a given organization.
@@ -121,7 +125,8 @@ class GitHubFlow:
         DataFrame contains information about PR name and PR number per user and repository where he contributes.
 
         Returns:
-            pd.DataFrame: Data Frame["contributor", "repo", "number", "title"].
+            pd.DataFrame: Data Frame["contributor", "repo", "number", "title", "created_at", "updated_at",
+                        "closed_at", "duration_days",].
         """
         df_all_contributions = self.contributor_info.get_all_contributions(REPO_NAMES)
         dict_repo_login = self.create_pairs_contributor_repo(
