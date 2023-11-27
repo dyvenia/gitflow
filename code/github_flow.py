@@ -16,7 +16,11 @@ REPO_NAMES = [
     "timeflow_ui",
     "timelogs",
     "viadot",
+    "js_frontends_comparison",
+    "timeflow-svelte",
 ]
+# 'docker-workshop',
+# 'folium_workshop',
 
 
 class GitHubFlow:
@@ -43,13 +47,30 @@ class GitHubFlow:
         url = f"https://api.github.com/search/issues?q=is:pr+repo:dyvenia/{repo}+author:{contributor}"
         pr_info = request_to_json(url)
         final_dict_per_user = {}
+
         try:
             for ind in range(len(pr_info["items"])):
+                if pr_info["items"][ind]["closed_at"] is not None:
+                    created = self.pr_info.str_to_datetime(
+                        pr_info["items"][ind]["created_at"]
+                    )
+                    closed = self.pr_info.str_to_datetime(
+                        pr_info["items"][ind]["closed_at"]
+                    )
+                    duration_days = (closed - created).days
+                else:
+                    duration_days = 0
+
                 dict_per_user = {
-                    "contributor": contributor,
-                    "repo": repo,
-                    "number": pr_info["items"][ind]["number"],
+                    "contributor_name": contributor,
+                    "repo_name": repo,
+                    "pr_number": pr_info["items"][ind]["number"],
                     "title": pr_info["items"][ind]["title"],
+                    "created_at": pr_info["items"][ind]["created_at"],
+                    "updated_at": pr_info["items"][ind]["updated_at"],
+                    "closed_at": pr_info["items"][ind]["closed_at"],
+                    # "merged_at": pr_info["items"][ind]["merged_at"],
+                    "duration_days": duration_days,
                 }
 
                 final_dict_per_user[pr_info["items"][ind]["id"]] = dict_per_user
@@ -61,7 +82,7 @@ class GitHubFlow:
 
     def list_all_pr_per_contributors(self, dict_repo_login: dict = None) -> List[dict]:
         """
-        List combined pull requests per every
+        List combined pull requests per each contributor.
 
         Args:
             dict_repo_login (dict, optional): Each contribution that occurs in a given organization.
@@ -104,7 +125,8 @@ class GitHubFlow:
         DataFrame contains information about PR name and PR number per user and repository where he contributes.
 
         Returns:
-            pd.DataFrame: Data Frame["contributor", "repo", "number", "title"].
+            pd.DataFrame: Data Frame["contributor", "repo", "number", "title", "created_at", "updated_at",
+                        "closed_at", "duration_days",].
         """
         df_all_contributions = self.contributor_info.get_all_contributions(REPO_NAMES)
         dict_repo_login = self.create_pairs_contributor_repo(
@@ -119,18 +141,31 @@ class GitHubFlow:
         for x in df_transformed.columns:
             df = pd.concat([df, df_transformed[x].apply(pd.Series)])
 
-        return df[["contributor", "repo", "number", "title"]].dropna()
+        return df[
+            [
+                "contributor_name",
+                "repo_name",
+                "pr_number",
+                "title",
+                "created_at",
+                "updated_at",
+                "closed_at",
+                "duration_days",
+            ]
+        ].dropna()
 
     def run_commit_info(self) -> pd.DataFrame:
         """
         Method to generate DataFrame with information about all commits from pull requests.
-        DataFrame contains information about author, PR number, message and date_commit.
+        DataFrame contains information about author, pr_number, message and date_commit.
 
         Returns:
             pd.DataFrame: Data Frame["author", "pr_number", "date_commit", "message", "comment_count"].
         """
         df = self.run_pr_info()
-        dict_pr_number_repo = {row["number"]: row["repo"] for _, row in df.iterrows()}
+        dict_pr_number_repo = {
+            row["pr_number"]: row["repo_name"] for _, row in df.iterrows()
+        }
         df_combined = pd.DataFrame()
         try:
             for pr_number, repo in dict_pr_number_repo.items():
@@ -155,7 +190,9 @@ class GitHubFlow:
             "repo", "status", "additions","deletions", "changes"].
         """
         df = self.run_pr_info()
-        dict_pr_number_repo = {row["number"]: row["repo"] for _, row in df.iterrows()}
+        dict_pr_number_repo = {
+            row["pr_number"]: row["repo_name"] for _, row in df.iterrows()
+        }
         df_combined = pd.DataFrame()
         try:
             for pr_number, repo in dict_pr_number_repo.items():
